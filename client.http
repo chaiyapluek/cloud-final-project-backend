@@ -1,0 +1,107 @@
+@url = http://localhost:8080
+POST {{url}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+    "attemptId": "6624c41c5d999e6772f0c8e3",
+    "email": "plubzaza555@gmail.com",
+    "code": "558534",
+    "requestAt": "{{$datetime iso8601}}"
+}
+
+###
+
+POST {{url}}/auth/login-attempt HTTP/1.1
+Content-Type: application/json
+
+{
+    "email": "plubzaza555@gmail.com",
+    "password": "123456"
+}
+
+###
+
+GET {{url}}/users/6623a33029172381614ad056 HTTP/1.1
+
+###
+
+POST {{url}}/auth/register-attempt HTTP/1.1
+Content-Type: application/json
+
+{
+    "email": "plubzaza555@gmail.com",
+    "name": "plub",
+    "password": "123456"
+}
+
+###
+
+POST {{url}}/auth/register HTTP/1.1
+Content-Type: application/json
+
+{
+    "attemptId": "6623a2f929172381614ad055",
+    "email": "plubzaza555@gmail.com",
+    "code": "003382",
+    "requestAt": "{{$datetime iso8601}}"
+}
+
+###
+
+GET {{url}}/locations HTTP/1.1
+
+###
+
+GET {{url}}/locations/651986655ff54c62ea7ff99c/menus HTTP/1.1
+
+###
+
+GET {{url}}/locations/651986655ff54c62ea7ff99c/menus/66222596ab2757e25679edc0 HTTP/1.1
+
+###
+
+GET {{url}}/users/6623a33029172381614ad056/carts?locationId=651986655ff54c62ea7ff99c HTTP/1.1
+
+###
+
+POST {{url}}/carts/662382960a5f2b6f15ec32c8/items HTTP/1.1
+Content-Type: application/json
+
+{
+    "menuId": "66222596ab2757e25679edc0",
+    "quantity": 1,
+    "totalPrice": 189,
+    "steps": [
+        {
+            "step": "step-0",
+            "options": ["white"]
+        },
+        {
+            "step": "step-1",
+            "options": ["beef"]
+        },
+        {
+            "step": "step-2",
+            "options": ["lettuce", "tomato"]
+        },
+        {
+            "step": "step-3",
+            "options": ["ketchup", "mayo"]
+        }
+    ]
+}
+
+###
+
+DELETE {{url}}/carts/66251d51bbffa90a57783aa6/items/1 HTTP/1.1
+
+###
+
+POST {{url}}/checkout HTTP/1.1
+Content-Type: application/json
+
+{
+    "cartId": "66251d51bbffa90a57783aa6",
+    "userId": "6623a33029172381614ad056",
+    "address": "123/456"
+}

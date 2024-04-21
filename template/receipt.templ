@@ -1,0 +1,149 @@
+package template
+
+import "fmt"
+
+type Step struct {
+	Name    string
+	Options []string
+}
+
+type ReceiptItem struct {
+	MenuName   string
+	TotalPrice int
+	Quantity   int
+	Steps      []*Step
+}
+
+type ReceiptProps struct {
+	Name         string
+	Address      string
+	LocationName string
+	TotalPrice   int
+	Items        []*ReceiptItem
+}
+
+templ PriceTable(items []*ReceiptItem, orderPrice, discount, net int) {
+	<table role="presentation" style="width:402px;border-collapse:collapse;border:0 solid #cccccc;border-spacing:0;text-align:left;">
+		for _, item := range items {
+			<tr>
+				<td align="left" style="padding:0px 16px 0px 16px;font-size:16px;">
+					<p style="margin:0">
+						{ item.MenuName } <span style="font-size:12px;">x {fmt.Sprintf("%d", item.Quantity)}</span>
+					</p>
+				</td>
+                <td align="right" style="padding:0px 16px 0px 16px;font-size:16px;">
+                    <p align="right" style="margin:0">
+                        {fmt.Sprintf("%d", item.Quantity * item.TotalPrice)}
+                    </p>
+                </td>
+			</tr>
+			<tr>
+				<td align="left" style="padding:0px 16px 16px 32px;font-size:10px;">
+					for _, step := range item.Steps {
+						for _, option := range step.Options {
+							<p style="margin:0">
+								{ option }
+							</p>
+						}
+					}
+				</td>
+                <td></td>
+			</tr>
+		}
+        <tr style="border-top: 1px solid black">
+            <td align="left" style="padding:8px 16px 0px 16px;font-size:16px;">
+				<p style="margin:0">ราคารวม</p>
+			</td>
+            <td align="right" style="padding:8px 16px 0px 16px;font-size:16px;">
+                <p align="right" style="margin:0">
+                    {fmt.Sprintf("%d", orderPrice)}
+                </p>
+            </td>
+        </tr>
+        <tr>
+            <td align="left" style="padding:0px 16px 0px 16px;font-size:16px;">
+				<p style="margin:0">ส่วนลด</p>
+			</td>
+            <td align="right" style="padding:0px 16px 0px 16px;font-size:16px;">
+                <p align="right" style="margin:0">
+                    {fmt.Sprintf("%d", discount)}
+                </p>
+            </td>
+        </tr>
+        <tr>
+            <td align="left" style="padding:0px 16px 0px 16px;font-size:16px;">
+				<p style="margin:0">ราคาสุทธิ</p>
+			</td>
+            <td align="right" style="padding:0px 16px 0px 16px;font-size:16px;">
+                <p align="right" style="margin:0">
+                    {fmt.Sprintf("%d", net)}
+                </p>
+            </td>
+        </tr>
+	</table>
+}
+
+templ Receipt(props ReceiptProps) {
+	<!DOCTYPE html>
+	<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
+		<head>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<meta http-equiv="Content-type" content="text/html; charset=UTF-8"/>
+			<!--[if mso]> 
+        <noscript> 
+            <xml> 
+                <o:OfficeDocumentSettings> 
+                <o:PixelsPerInch>96</o:PixelsPerInch> 
+                </o:OfficeDocumentSettings> 
+            </xml> 
+        </noscript> 
+    <![endif]-->
+			<style>
+    table, td, div, h1, p {font-family: Arial, sans-serif;}
+	
+    </style>
+		</head>
+		<body style="margin:0;padding:0;">
+			<table role="presentation" style="width:100%;border-collapse:collapse;border:1px;border-spacing:0;background:#ffffff;">
+				<tr>
+					<td align="center" style="padding:0;">
+						<table role="presentation" style="width:402px;border-collapse:collapse;border:1px solid #cccccc;border-spacing:0;text-align:left;">
+							<tr>
+								<td align="center" style="padding:16px 0 0 0;">
+									<span style="font-size:36px;font-weight:bold;color:#facc14;">SAY</span>
+									<span style="font-size:36px;font-weight:bold;color:#15903d;">WUB</span>
+								</td>
+							</tr>
+							<tr>
+								<td align="left" style="padding:16px;font-size:24px;">
+									Receipt
+									<p style="font-size:14px;margin:0">สาขา { props.LocationName }</p>
+								</td>
+							</tr>
+							<tr>
+								<td align="left" style="padding:16px 16px 8px 16px;font-size:16px;">
+									ชื่อ: { props.Name }
+								</td>
+							</tr>
+							<tr>
+								<td align="left" style="padding:0px 16px 16px 16px;font-size:16px;">
+									ที่อยู่จัดส่ง: { props.Address }
+								</td>
+							</tr>
+							<tr style="border-top: 1px solid black">
+								<td align="left" style="padding:16px 16px 16px 16px;font-size:16px;">
+									รายการสั่งซื้อ
+								</td>
+							</tr>
+							<tr>
+								<td style="padding:0px 0px 32px 0px;">
+                                    @PriceTable(props.Items, props.TotalPrice, props.TotalPrice, 0)
+                                </td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</body>
+	</html>
+}

@@ -1,0 +1,44 @@
+package template
+
+templ Body(code string){
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="Content-type" content="text/html; charset=UTF-8"/>
+    <!--[if mso]> 
+        <noscript> 
+            <xml> 
+                <o:OfficeDocumentSettings> 
+                <o:PixelsPerInch>96</o:PixelsPerInch> 
+                </o:OfficeDocumentSettings> 
+            </xml> 
+        </noscript> 
+    <![endif]-->
+    <style>
+    table, td, div, h1, p {font-family: Arial, sans-serif;}
+	table, td {border:none !important;}
+    </style>
+</head>
+<body style="margin:0;padding:0;">
+    <table role="presentation" style="width:100%;border-collapse:collapse;border:0;border-spacing:0;background:#ffffff;">
+		<tr>
+			<td align="center" style="padding:0;">
+				<span style="font-size:36px;font-weight:bold;color:#facc14;">SAY</span>
+                <span style="font-size:36px;font-weight:bold;color:#15903d;">WUB</span>
+			</td>
+		</tr>
+        <tr>
+			<td align="center" style="padding:16px 0 0 0;font-size:24px;">
+				Login code
+			</td>
+		</tr>
+        <tr>
+			<td align="center" style="padding:0;font-size:24px;">
+				{code}
+			</td>
+		</tr>
+	</table>
+</body>
+</html>
+}
