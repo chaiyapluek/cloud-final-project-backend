@@ -10,6 +10,7 @@ import (
 
 type SMTPConfig struct {
 	Sender            string
+	MaxSendPerDay     int
 	Host              string
 	Port              int
 	Encryption        string
@@ -34,6 +35,7 @@ type Collection struct {
 	Location    string
 	Menu        string
 	Cart        string
+	Email       string
 }
 
 type Config struct {
@@ -93,17 +95,33 @@ func LoadEnv() *Config {
 	if cartCollection == "" {
 		cartCollection = "carts"
 	}
+	emailCollection := os.Getenv("MONGO_COLLECTION_EMAIL")
+	if emailCollection == "" {
+		emailCollection = "emails"
+	}
 	cfg.DB.Collection = &Collection{
 		AuthAttempt: authAttemptCollection,
 		User:        userCollection,
 		Location:    locationCollection,
 		Menu:        menuCollection,
 		Cart:        cartCollection,
+		Email:       emailCollection,
 	}
 
 	cfg.SMTP.Sender = os.Getenv("SMTP_SENDER")
 	if cfg.SMTP.Sender == "" {
 		log.Fatal("sender is required")
+	}
+
+	maxSendPerDay := os.Getenv("SMTP_MAX_SEND_PER_DAY")
+	if maxSendPerDay == "" {
+		cfg.SMTP.MaxSendPerDay = 20
+	} else {
+		maxSendPerDayNum, err := strconv.Atoi(maxSendPerDay)
+		if err != nil {
+			log.Fatal("invalid max send per day value")
+		}
+		cfg.SMTP.MaxSendPerDay = maxSendPerDayNum
 	}
 
 	cfg.SMTP.Host = os.Getenv("SMTP_HOST")

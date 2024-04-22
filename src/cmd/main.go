@@ -44,13 +44,15 @@ func main() {
 
 	conn := database.GetMongoConnection(cfg.DB.Host)
 
+	emailRepo := repository.NewEmailRepository(conn, cfg.DB.DBName, cfg.DB.Collection)
+
 	authRepo := repository.NewAuthRepository(conn, cfg.DB.DBName, cfg.DB.Collection)
 	userRepo := repository.NewUserRepository(conn, cfg.DB.DBName, cfg.DB.Collection)
 	locationRepo := repository.NewLocationRepository(conn, cfg.DB.DBName, cfg.DB.Collection)
 	cartRepo := repository.NewCartRepository(conn, cfg.DB.DBName, cfg.DB.Collection)
 
 	mailServer := smtpServer(cfg.SMTP)
-	mailService := service.NewEmailService(mailServer, cfg.SMTP.Sender)
+	mailService := service.NewEmailService(emailRepo, cfg.SMTP.MaxSendPerDay, mailServer, cfg.SMTP.Sender)
 	authService := service.NewAuthService(mailService, authRepo, userRepo)
 	locationService := service.NewLocationService(locationRepo)
 	cartService := service.NewCartService(cartRepo, userRepo, mailService)
