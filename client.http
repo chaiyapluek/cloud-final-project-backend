@@ -22,7 +22,6 @@ Content-Type: application/json
 ###
 
 GET {{url}}/users/6623a33029172381614ad056 HTTP/1.1
-X-Api-Key: cs0AnUJf9h5QvP6RIW4N3t4c98qNEWrG
 
 ###
 
