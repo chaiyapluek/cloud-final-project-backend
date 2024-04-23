@@ -168,7 +168,7 @@ func (s *chatService) Sent(userId string, locationId string, content string) ([]
 				history += v.RawContent
 			}
 		}
-		input = fmt.Sprintf("<s>[INST] %s (reponse no longer than 150 words) [/INST]</s>", content)
+		input = fmt.Sprintf("<s>[INST] %s (reponse no longer than 150 words and do not answer other than sandwich) [/INST]</s>", content)
 	}
 
 	userSendTime := time.Now()
