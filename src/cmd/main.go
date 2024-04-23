@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -12,7 +13,11 @@ import (
 	"dev.chaiyapluek.cloud.final.backend/src/service"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/tmc/langchaingo/llms/bedrock"
 	mail "github.com/xhit/go-simple-mail/v2"
+
+	awsConfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
 )
 
 func smtpServer(cfg *config.SMTPConfig) *mail.SMTPServer {
@@ -42,6 +47,19 @@ func main() {
 	cfg := config.LoadEnv()
 	e := echo.New()
 
+	awsCfg, err := awsConfig.LoadDefaultConfig(context.Background(), awsConfig.WithRegion(cfg.Bedrock.Region), awsConfig.WithSharedConfigProfile(cfg.Bedrock.Profile))
+	if err != nil {
+		panic(err)
+	}
+
+	llm, err := bedrock.New(
+		bedrock.WithModel(cfg.Bedrock.Model),
+		bedrock.WithClient(bedrockruntime.NewFromConfig(awsCfg)),
+	)
+	if err != nil {
+		panic(err)
+	}
+
 	conn := database.GetMongoConnection(cfg.DB.Host)
 
 	emailRepo := repository.NewEmailRepository(conn, cfg.DB.DBName, cfg.DB.Collection)
@@ -50,19 +68,26 @@ func main() {
 	userRepo := repository.NewUserRepository(conn, cfg.DB.DBName, cfg.DB.Collection)
 	locationRepo := repository.NewLocationRepository(conn, cfg.DB.DBName, cfg.DB.Collection)
 	cartRepo := repository.NewCartRepository(conn, cfg.DB.DBName, cfg.DB.Collection)
+	chatRepo := repository.NewChatRepository(conn, cfg.DB.DBName, cfg.DB.Collection)
 
 	mailServer := smtpServer(cfg.SMTP)
 	mailService := service.NewEmailService(emailRepo, cfg.SMTP.MaxSendPerDay, mailServer, cfg.SMTP.Sender)
 	authService := service.NewAuthService(mailService, authRepo, userRepo)
 	locationService := service.NewLocationService(locationRepo)
-	cartService := service.NewCartService(cartRepo, userRepo, mailService)
+	cartService := service.NewCartService(cartRepo, userRepo, chatRepo, mailService)
 
 	authHandler := handler.NewAuthHandler(authService)
 	locationHandler := handler.NewLocationHandler(locationService)
 	cartHandler := handler.NewCartHandler(cartService)
 
+	chatService := service.NewChatService(chatRepo, locationRepo, llm)
+	chatHandler := handler.NewChatHandler(chatService)
+
+	guard := myMiddleware.NewGuardMiddleware(cfg.FrontendAPIKey)
+
 	e.Use(middleware.Logger())
 	e.Use(myMiddleware.ErrorHandlerMiddleware)
+	e.Use(guard.Guard)
 
 	authRoute := e.Group("auth")
 	authRoute.POST("/login", authHandler.Login)
@@ -78,6 +103,7 @@ func main() {
 	userReoute := e.Group("users")
 	userReoute.GET("/:userId", authHandler.GetMe)
 	userReoute.GET("/:userId/carts", cartHandler.GetCartByUserId)
+	userReoute.GET("/:userId/chats", chatHandler.GetUserChat)
 
 	cartRoute := e.Group("carts")
 	cartRoute.POST("", cartHandler.CreateCart)
@@ -85,6 +111,7 @@ func main() {
 	cartRoute.DELETE("/:cartId/items/:itemId", cartHandler.DeleteCartItem)
 
 	e.POST("/checkout", cartHandler.Checkout)
+	e.POST("/chats", chatHandler.Sent)
 
 	e.Start(fmt.Sprintf("%s:%s", cfg.Host, cfg.Port))
 }

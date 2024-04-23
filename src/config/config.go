@@ -36,13 +36,22 @@ type Collection struct {
 	Menu        string
 	Cart        string
 	Email       string
+	Chat        string
+}
+
+type Bedrock struct {
+	Model   string
+	Region  string
+	Profile string
 }
 
 type Config struct {
-	Host string
-	Port string
-	DB   *DBConfig
-	SMTP *SMTPConfig
+	Host           string
+	Port           string
+	FrontendAPIKey string
+	DB             *DBConfig
+	SMTP           *SMTPConfig
+	Bedrock        *Bedrock
 }
 
 func LoadEnv() *Config {
@@ -69,6 +78,8 @@ func LoadEnv() *Config {
 	if cfg.Port == "" {
 		cfg.Port = "8080"
 	}
+
+	cfg.FrontendAPIKey = os.Getenv("FRONTEND_API_KEY")
 
 	cfg.DB.Host = os.Getenv("MONGO_HOST")
 	cfg.DB.Username = os.Getenv("MONGO_USERNAME")
@@ -99,6 +110,10 @@ func LoadEnv() *Config {
 	if emailCollection == "" {
 		emailCollection = "emails"
 	}
+	chatCollection := os.Getenv("MONGO_COLLECTION_CHAT")
+	if chatCollection == "" {
+		chatCollection = "chats"
+	}
 	cfg.DB.Collection = &Collection{
 		AuthAttempt: authAttemptCollection,
 		User:        userCollection,
@@ -106,6 +121,7 @@ func LoadEnv() *Config {
 		Menu:        menuCollection,
 		Cart:        cartCollection,
 		Email:       emailCollection,
+		Chat:        chatCollection,
 	}
 
 	cfg.SMTP.Sender = os.Getenv("SMTP_SENDER")
@@ -171,6 +187,11 @@ func LoadEnv() *Config {
 		}
 		cfg.SMTP.SendTimeout = stNum
 	}
+
+	cfg.Bedrock = &Bedrock{}
+	cfg.Bedrock.Model = os.Getenv("BEDROCK_MODEL")
+	cfg.Bedrock.Region = os.Getenv("BEDROCK_REGION")
+	cfg.Bedrock.Profile = os.Getenv("BEDROCK_PROFILE")
 
 	return &cfg
 }

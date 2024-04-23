@@ -23,13 +23,15 @@ type CartService interface {
 type cartServiceImpl struct {
 	cartRepo     repository.CartRepository
 	userRepo     repository.UserRepository
+	chatRepo     repository.ChatRepository
 	emailService EmailService
 }
 
-func NewCartService(cartRepo repository.CartRepository, userRepo repository.UserRepository, emailService EmailService) CartService {
+func NewCartService(cartRepo repository.CartRepository, userRepo repository.UserRepository, chatRepo repository.ChatRepository, emailService EmailService) CartService {
 	return &cartServiceImpl{
 		cartRepo:     cartRepo,
 		userRepo:     userRepo,
+		chatRepo:     chatRepo,
 		emailService: emailService,
 	}
 }
@@ -293,6 +295,11 @@ func (s *cartServiceImpl) Checkout(req *dto.CheckoutRequest) error {
 	}
 
 	err = s.cartRepo.DeleteCartById(&cartId)
+	if err != nil {
+		return appError.NewErrInternalServerError(err.Error())
+	}
+
+	err = s.chatRepo.DeleteChat(&userId, cart.LocationId)
 	if err != nil {
 		return appError.NewErrInternalServerError(err.Error())
 	}

@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"log"
+
 	"dev.chaiyapluek.cloud.final.backend/src/dto"
 	appError "dev.chaiyapluek.cloud.final.backend/src/pkg/error"
 	"dev.chaiyapluek.cloud.final.backend/src/service"
@@ -59,13 +61,15 @@ func (h *authHandler) LoginAttempt(e echo.Context) error {
 func (h *authHandler) RegisterAttempt(e echo.Context) error {
 	var req dto.RegisterAttemptRequest
 	if err := e.Bind(&req); err != nil {
+		log.Println(err)
 		return appError.NewErrBadRequest()
 	}
 	if req.Email == "" || req.Password == "" || req.Name == "" {
-		return appError.NewErrBadRequest()
+		return appError.NewErrBadRequest("request body not complete")
 	}
 	resp, err := h.authService.RegisterAttempt(req.Email, req.Password, req.Name)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 	return e.JSON(200, dto.NewSuccessResponse(200, resp, "Register code send"))
