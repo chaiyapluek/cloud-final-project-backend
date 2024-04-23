@@ -23,5 +23,6 @@ services:
     env_file:
       - .env.local
 
+
 volumes:
   data:
